@@ -1,14 +1,19 @@
 import { useState } from 'react'
 
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 const SignUp = () => {
+
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
   })
+
+  const navigate = useNavigate()
 
   const handleChange = e => {
     setFormData(prev => (
@@ -21,6 +26,7 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setLoading(true)
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: {
@@ -30,6 +36,17 @@ const SignUp = () => {
     })
 
     const data = await res.json()
+    setFormData({
+      username: '',
+      email: '',
+      password: ''
+    })
+    if (data.success === false) {
+      setError(data.message)
+      setLoading(false)
+    }
+    setLoading(false)
+    navigate('/sign-in')
     console.log(data);
   }
 
@@ -40,7 +57,7 @@ const SignUp = () => {
         <input type="text" id="username" placeholder='Username' value={formData.username} onChange={handleChange} className='border p-3 rounded-lg focus:outline-none' autoComplete='off' />
         <input type="email" id="email" placeholder='Email' value={formData.email} onChange={handleChange} className='border p-3 rounded-lg focus:outline-none' />
         <input type="password" id="password" placeholder='Password' value={formData.password} onChange={handleChange} className='border p-3 rounded-lg focus:outline-none' autoComplete='off' />
-        <button className='bg-slate-600 text-white p-3 rounded-lg hover:opacity-95 disabled:opacity-80'>Sign Up</button>
+        <button disabled={loading} className='bg-slate-600 text-white p-3 rounded-lg hover:opacity-95 disabled:opacity-80'>{loading ? 'Loading...' : 'Sign Up'}</button>
       </form>
       <div className='flex gap-2 mt-5 justify-end'>
         <p>Already have an account?</p>
